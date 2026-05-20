@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alex Baxendale — Principal Architect</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f0e;
+      --surface: #141714;
+      --border: #1f2420;
+      --accent: #b8f07a;
+      --accent-dim: #7aad48;
+      --text: #e8ede9;
+      --muted: #6b7a6d;
+      --heading-font: 'Syne', sans-serif;
+      --body-font: 'DM Mono', monospace;
+      --serif: 'Instrument Serif', serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body-font);
+      font-size: 14px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.35;
+    }
+
+    /* ── GRID LINES ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 3rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(13,15,14,0.85);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-logo {
+      font-family: var(--heading-font);
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+      color: var(--accent);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 3rem 4rem;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .hero-bg-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--heading-font);
+      font-weight: 800;
+      font-size: clamp(8rem, 18vw, 22rem);
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(184,240,122,0.06);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.8s ease both;
+    }
+
+    .hero-name {
+      font-family: var(--heading-font);
+      font-weight: 800;
+      font-size: clamp(3.5rem, 8vw, 8rem);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+
+    .hero-name em {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      max-width: 560px;
+      color: var(--muted);
+      font-size: 0.875rem;
+      line-height: 1.8;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.75rem;
+      font-family: var(--body-font);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border: 1px solid;
+      transition: all 0.25s;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+    }
+    .btn-primary:hover { background: transparent; color: var(--accent); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--muted);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+    .hero-meta {
+      position: absolute;
+      right: 3rem;
+      bottom: 4rem;
+      text-align: right;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+
+    .hero-meta span {
+      display: block;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .hero-meta strong {
+      font-family: var(--heading-font);
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    /* ── SECTIONS ── */
+    section {
+      position: relative;
+      z-index: 1;
+      padding: 5rem 3rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── ABOUT ── */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .about-headline {
+      font-family: var(--heading-font);
+      font-weight: 700;
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .about-headline em {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--accent);
+    }
+
+    .about-body {
+      color: var(--muted);
+      font-size: 0.875rem;
+      line-height: 1.9;
+    }
+
+    .about-body p + p { margin-top: 1rem; }
+
+    /* ── EXPERTISE PILLS ── */
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 2rem;
+    }
+
+    .pill {
+      padding: 0.35rem 0.9rem;
+      border: 1px solid var(--border);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .pill:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── EXPERIENCE ── */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 2rem;
+      padding: 2.5rem 0;
+      border-bottom: 1px solid var(--border);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .timeline-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .timeline-item:last-child { border-bottom: none; }
+
+    .timeline-date {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      padding-top: 0.2rem;
+      text-transform: uppercase;
+    }
+
+    .timeline-date strong {
+      display: block;
+      font-family: var(--heading-font);
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: var(--accent);
+      letter-spacing: 0;
+      margin-bottom: 0.3rem;
+    }
+
+    .timeline-content h3 {
+      font-family: var(--heading-font);
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+      letter-spacing: -0.01em;
+    }
+
+    .timeline-content .company {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+    }
+
+    .timeline-content p {
+      font-size: 0.825rem;
+      color: var(--muted);
+      line-height: 1.8;
+      margin-bottom: 1rem;
+    }
+
+    .timeline-bullets {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .timeline-bullets li {
+      font-size: 0.8rem;
+      color: var(--muted);
+      padding-left: 1.2rem;
+      position: relative;
+      line-height: 1.6;
+    }
+
+    .timeline-bullets li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    /* ── CERTS ── */
+    .certs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .cert-item {
+      background: var(--bg);
+      padding: 1.5rem;
+      transition: background 0.2s;
+    }
+
+    .cert-item:hover { background: var(--surface); }
+
+    .cert-year {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .cert-name {
+      font-family: var(--heading-font);
+      font-weight: 600;
+      font-size: 0.9rem;
+      line-height: 1.3;
+    }
+
+    /* ── CONTACT ── */
+    .contact-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .contact-headline {
+      font-family: var(--heading-font);
+      font-weight: 800;
+      font-size: clamp(2.5rem, 5vw, 5rem);
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .contact-headline em {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--accent);
+    }
+
+    .contact-links {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .contact-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 1.5rem;
+      border: 1px solid var(--border);
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.25s;
+    }
+
+    .contact-link:hover {
+      border-color: var(--accent);
+      background: rgba(184,240,122,0.04);
+    }
+
+    .contact-link-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .contact-link-value {
+      font-family: var(--heading-font);
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .contact-arrow {
+      color: var(--accent);
+      font-size: 1.2rem;
+      transition: transform 0.2s;
+    }
+
+    .contact-link:hover .contact-arrow { transform: translateX(4px); }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      padding: 2rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer p {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { padding: 0 1.5rem 3rem; }
+      .hero-meta { display: none; }
+      section { padding: 3rem 1.5rem; }
+      .about-grid, .contact-inner { grid-template-columns: 1fr; gap: 2rem; }
+      .timeline-item { grid-template-columns: 1fr; gap: 0.5rem; }
+      footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">AB</div>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#experience">Experience</a></li>
+      <li><a href="#certifications">Certifications</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-bg-text">ARCH</div>
+    <p class="hero-tag">Principal Solutions Architect · Leeds, UK</p>
+    <h1 class="hero-name">Alex<br><em>Baxendale</em></h1>
+    <p class="hero-sub">
+      Designing and delivering complex, high-scale technical solutions across Finance, Retail, Aviation, and Gaming. Bridging executive vision with technical execution at Flutter Entertainment.
+    </p>
+    <div class="hero-cta">
+      <a href="#experience" class="btn btn-primary">View Experience</a>
+      <a href="#contact" class="btn btn-secondary">Get In Touch</a>
+    </div>
+    <div class="hero-meta">
+      <span>Currently at</span>
+      <strong>Flutter Entertainment</strong>
+      <span style="margin-top:0.5rem">Office of the CTO</span>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <p class="section-label">About</p>
+    <div class="about-grid">
+      <div>
+        <h2 class="about-headline">Pragmatist.<br>Strategist.<br><em>Architect.</em></h2>
+        <div class="pills">
+          <span class="pill">AWS</span>
+          <span class="pill">Cloud Architecture</span>
+          <span class="pill">Platform Engineering</span>
+          <span class="pill">Security & Compliance</span>
+          <span class="pill">Kafka / MSK</span>
+          <span class="pill">Terraform</span>
+          <span class="pill">Domain Modelling</span>
+          <span class="pill">Technical Governance</span>
+          <span class="pill">ISO 27001</span>
+          <span class="pill">CCSP</span>
+          <span class="pill">Migration Strategy</span>
+          <span class="pill">VMware</span>
+        </div>
+      </div>
+      <div class="about-body">
+        <p>
+          A dedicated and strategic Principal Architect with extensive experience designing and delivering complex, high-scale technical solutions across Finance, Retail, Aviation, and Gaming.
+        </p>
+        <p>
+          Currently providing architectural direction for Flutter UK&I's most significant transformation programs, specialising in bridging the gap between executive vision and technical execution across multi-brand ecosystems.
+        </p>
+        <p>
+          A pragmatist at heart — passionate about leveraging modern technology stacks to de-risk large-scale, cost-effective, high-performance architecture while improving platform resilience and agility in heavily regulated environments.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section id="experience">
+    <p class="section-label">Experience</p>
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="timeline-date">
+          <strong>2025 — Present</strong>
+          Apr 2025 – Now
+        </div>
+        <div class="timeline-content">
+          <h3>Principal Solutions Architect</h3>
+          <p class="company">Flutter Entertainment Ltd · Office of the CTO · Leeds</p>
+          <p>Shaping the technical roadmap for Flutter UKI's largest transformation projects, acting as Lead Architect for a business-critical re-platforming program migrating core Account, iGaming and Sportsbook pillars to a modernised platform.</p>
+          <ul class="timeline-bullets">
+            <li>Acting Lead Architect for a business-critical re-platforming program across Account, iGaming and Sportsbook pillars</li>
+            <li>Orchestrating the full architectural lifecycle — discovery, domain modelling, design and phased migration — for millions of active customers</li>
+            <li>Driving technical governance, peer review, and mentorship across a cross-functional architect team</li>
+            <li>Primary technical bridge between Office of the CTO and regional engineering leads</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">
+          <strong>2023 — 2025</strong>
+          Dec 2023 – Apr 2025
+        </div>
+        <div class="timeline-content">
+          <h3>Senior Solutions Architect</h3>
+          <p class="company">PokerStars (Flutter Entertainment Ltd) · Leeds</p>
+          <p>Selected to join a newly formed Focus Tribe to deliver the highest-priority product for the Poker business, with direct responsibility for Data Streams, AWS Core Infrastructure, and Partner Connectivity.</p>
+          <ul class="timeline-bullets">
+            <li>Defined event streaming architecture using Kafka (AWS MSK) and Apicurio Schema Registry with Protobuf schemas</li>
+            <li>Defined cross-program AWS deployment and operational integration patterns</li>
+            <li>Produced secure partner connectivity patterns for CloudWAN and on-premises integrations</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">
+          <strong>2023</strong>
+          Apr – Dec 2023
+        </div>
+        <div class="timeline-content">
+          <h3>Senior Platform Architect</h3>
+          <p class="company">PokerStars Sports (Flutter Entertainment Ltd) · Leeds</p>
+          <p>Promoted within the Sports Tribe with broader scope across multiple Architecture governance boards within Flutter International.</p>
+          <ul class="timeline-bullets">
+            <li>Led AWS account migration across a new AWS Organisation, including SSO, SOC, and network considerations</li>
+            <li>Designed tactical Sportsbook regulator integration across Datacentre and AWS boundaries</li>
+            <li>ISO 27001 audit across all environments, identifying gaps and proposing risk-based solutions</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">
+          <strong>2021 — 2023</strong>
+          Jan 2021 – Apr 2023
+        </div>
+        <div class="timeline-content">
+          <h3>Platform Architect</h3>
+          <p class="company">PokerStars Sports (Flutter Entertainment Ltd) · Leeds</p>
+          <p>Responsible for cloud platform capability design on the next-generation PokerStars Sports platform, collaborating across Flutter brands including SkyBet, Betfair, PaddyPower, and Fanduel.</p>
+          <ul class="timeline-bullets">
+            <li>Designed overall AWS network connectivity using Transit Gateway, VPC, and subnet patterns</li>
+            <li>Implemented AWS Firewall Manager, AWS Inspector, and Tenable for security compliance</li>
+            <li>Led implementation of 2x AWS Outpost Racks within Flutter's private data centres via Direct Connect</li>
+            <li>Led successful planning and execution of first customer migrations onto the new sportsbook platform</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">
+          <strong>2020 — 2021</strong>
+          Jul 2020 – Jan 2021
+        </div>
+        <div class="timeline-content">
+          <h3>Cloud Platform Engineer</h3>
+          <p class="company">Morrisons Supermarkets plc · Bradford</p>
+          <p>Founding member of the Cloud Operations team, responsible for all public cloud environments at platform level covering AWS services including monitoring, security, cost optimisation and environment builds.</p>
+          <ul class="timeline-bullets">
+            <li>Implemented cloud governance guardrails using AWS Config and AWS Organizations SCP policies</li>
+            <li>Deployed platform-level services (VPCs, ELBs) via Infrastructure as Code with Terraform</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">
+          <strong>2020</strong>
+          Mar – Jul 2020
+        </div>
+        <div class="timeline-content">
+          <h3>VMware HCI Specialist</h3>
+          <p class="company">Bax Tech Ltd (Contract) @ Morrisons Supermarkets · Bradford</p>
+          <p>Led the technical implementation of a large-scale Data Centre platform refresh based on VMware Cloud Foundation, including DellEMC VxRail, NSX-T, HCX, vROPs, vSAN and vLCM.</p>
+          <ul class="timeline-bullets">
+            <li>Led hands-on commissioning of new platform with full VMware SDDC stack including Stretched vSAN</li>
+            <li>Defined multi-phase migration strategy covering discovery, placement, wave planning and post-migration testing</li>
+            <li>Deployed highly available Gemalto KMS cluster with Thales for vSAN encryption</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">
+          <strong>2019 — 2020</strong>
+          Apr 2019 – Mar 2020
+        </div>
+        <div class="timeline-content">
+          <h3>Lead Platform Engineer</h3>
+          <p class="company">Bax Tech Ltd (Contract) @ TSYS / Global Payments · Knaresborough</p>
+          <p>Provided architecture expertise and guidance across multiple initiatives within the TSYS project portfolio, from infrastructure design to low-level implementation.</p>
+          <ul class="timeline-bullets">
+            <li>Rapid design and build of vSphere ESXi 6.7 clusters on Cisco UCS hardware</li>
+            <li>Windows Server refresh migrating disparate services from unsupported OS</li>
+            <li>SAN storage migration including Cisco UCS blade infrastructure and Datastore/LUN zone configuration</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">
+          <strong>2016 — 2019</strong>
+          Sept 2016 – Apr 2019
+        </div>
+        <div class="timeline-content">
+          <h3>Technical Expert – Infrastructure Delivery</h3>
+          <p class="company">ASDA Stores Ltd · Leeds</p>
+          <p>Senior member of Core Infrastructure delivery team, sole Cloud SME, and key member of the ASDA Cloud Architecture virtual team with multiple trips to Walmart Cloud teams in the USA.</p>
+          <ul class="timeline-bullets">
+            <li>Sole Cloud SME — responsible for Azure capacity forecasting and all ASDA cloud deployments</li>
+            <li>Designed and built greenfield data centre capabilities across two co-lo environments</li>
+            <li>Key contributor to data centre migration programme alongside IBM, covering seed planning, discovery and wave planning</li>
+            <li>Deployed Azure IaaS/PaaS stack including WebApps, WAF, VM Scale Sets, and PaaS databases</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">
+          <strong>2014 — 2016</strong>
+          Nov 2014 – Sept 2016
+        </div>
+        <div class="timeline-content">
+          <h3>Technical Expert – Infrastructure Operations</h3>
+          <p class="company">ASDA Stores Ltd · Leeds</p>
+          <ul class="timeline-bullets">
+            <li>Lead technical engineer for server and storage operational support across data centres, distribution centres, and stores</li>
+            <li>Implemented PRTG, vROps, and PowerShell monitoring solutions for proactive environment management</li>
+            <li>Deputised for Operations Technical Team Manager, reporting to Senior Director level</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">
+          <strong>2008 — 2014</strong>
+          Sept 2008 – Nov 2014
+        </div>
+        <div class="timeline-content">
+          <h3>Senior IT Systems Analyst (Technical Lead)</h3>
+          <p class="company">Leeds Bradford International Airport Ltd · Leeds</p>
+          <p>Technical lead for all IT support escalations and project deliverables across a wide range of critical airport IT systems requiring 24/7 support.</p>
+          <ul class="timeline-bullets">
+            <li>Owned and developed the entire airport network infrastructure (Nortel/Avaya, Fortigate, Meru WiFi)</li>
+            <li>Led VMware vSphere and NetApp FAS storage environment refresh including DR with VMware SRM</li>
+            <li>Delivered AODB system refresh on Lockheed Martin platform — critical to all airport operations</li>
+            <li>Enforced PCI DSS compliance standards across the estate</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CERTIFICATIONS -->
+  <section id="certifications">
+    <p class="section-label">Certifications</p>
+    <div class="certs-grid">
+      <div class="cert-item">
+        <p class="cert-year">2022</p>
+        <p class="cert-name">(ISC²) CCSP — Certified Cloud Security Professional</p>
+      </div>
+      <div class="cert-item">
+        <p class="cert-year">2021</p>
+        <p class="cert-name">BCS Practitioner Certificate in Enterprise & Solution Architecture</p>
+      </div>
+      <div class="cert-item">
+        <p class="cert-year">2020</p>
+        <p class="cert-name">AWS Certified Solutions Architect — Associate (SAA-C02)</p>
+      </div>
+      <div class="cert-item">
+        <p class="cert-year">2020</p>
+        <p class="cert-name">HashiCorp Certified Terraform Associate</p>
+      </div>
+      <div class="cert-item">
+        <p class="cert-year">2018</p>
+        <p class="cert-name">Microsoft Azure Infrastructure Solutions</p>
+      </div>
+      <div class="cert-item">
+        <p class="cert-year">2016</p>
+        <p class="cert-name">VMware VCP 5</p>
+      </div>
+      <div class="cert-item">
+        <p class="cert-year">2010</p>
+        <p class="cert-name">Microsoft MCSE</p>
+      </div>
+      <div class="cert-item">
+        <p class="cert-year">2009</p>
+        <p class="cert-name">Microsoft MCSA</p>
+      </div>
+      <div class="cert-item">
+        <p class="cert-year">2009</p>
+        <p class="cert-name">Cisco CCNA</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <p class="section-label">Contact</p>
+    <div class="contact-inner">
+      <h2 class="contact-headline">Let's<br><em>work</em><br>together.</h2>
+      <div class="contact-links">
+        <a href="mailto:alex@baxendale.me" class="contact-link">
+          <div>
+            <span class="contact-link-label">Email</span>
+            <span class="contact-link-value">alex@baxendale.me</span>
+          </div>
+          <span class="contact-arrow">→</span>
+        </a>
+        <a href="tel:07989873467" class="contact-link">
+          <div>
+            <span class="contact-link-label">Phone</span>
+            <span class="contact-link-value">07989 873 467</span>
+          </div>
+          <span class="contact-arrow">→</span>
+        </a>
+        <a href="https://uk.linkedin.com/in/abaxendale" target="_blank" class="contact-link">
+          <div>
+            <span class="contact-link-label">LinkedIn</span>
+            <span class="contact-link-value">linkedin.com/in/abaxendale</span>
+          </div>
+          <span class="contact-arrow">→</span>
+        </a>
+        <div class="contact-link" style="cursor:default">
+          <div>
+            <span class="contact-link-label">Location</span>
+            <span class="contact-link-value">Ilkley, West Yorkshire</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2026 Alex Baxendale</p>
+    <p>Principal Solutions Architect · Flutter Entertainment</p>
+  </footer>
+
+  <script>
+    // Scroll-triggered timeline reveals
+    const items = document.querySelectorAll('.timeline-item');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    items.forEach(item => observer.observe(item));
+
+    // Smooth active nav highlight
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 120) current = s.id;
+      });
+      navLinks.forEach(a => {
+        a.style.color = a.getAttribute('href') === '#' + current
+          ? 'var(--accent)' : '';
+      });
+    });
+  </script>
+
+</body>
+</html>
